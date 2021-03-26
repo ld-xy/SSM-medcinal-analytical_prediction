@@ -1,0 +1,65 @@
+from sys import argv
+
+
+def match_disease(disease_list,key_words):
+    '''
+    通过给定的症状关键词列表来匹配出具有症状的疾病
+    disease_list:要匹配的疾病列表
+    key_words:症状关键词列表
+    '''
+    dc_list=[]  #匹配的结果列表
+    for i in key_words:
+        dc_list=[]
+        for j in disease_list:
+            if i in j["symptom"]:
+                dc_list.append(j)
+        disease_list = dc_list
+    return dc_list
+
+def return_symptom(dl,kws):
+    '''
+    返回一个症状给用户选择
+    dl:疾病列表
+    kws：症状关键词列表
+    '''
+    di ={}
+    for i in dl:
+        for j in i["symptom"] :
+            if  j not in di:
+                di.update({j:1})
+            else:
+                di.update({j:di[j]+1})
+    return(sorted(di.items(), key = lambda kv:(kv[1], kv[0]),reverse=True)[len(kws)][0])
+
+
+def update_disease_keywords(dl,kws,kw,fl):
+    '''
+    更新keywords和disease_list
+
+    dl:预选疾病列表
+    kws：keywords列表
+    kw：供用户选择的关键词
+    fl：用户选择的结果，是->True ,否->False
+    '''
+    disease_temp=[]
+    if fl ==True:
+        kws.append(kw)
+        disease_temp=match_disease(dl,kws)
+        return disease_temp,kws
+    else:
+        for i in dl:
+            if kw in i['symptom']:
+                dl.remove(i)
+                continue
+        return dl,kws
+
+if __name__ == '__main__':
+    disease_list = eval(argv[1])
+    fl = argv[2]
+    kws = eval(argv[3])
+    kw = argv[4]
+    dl,kws=update_disease_keywords(disease_list,kws,kw,fl)
+    print(return_symptom(dl,kws))
+    print(dl)
+    print(kws)
+    print(len(disease_list))

@@ -1,0 +1,71 @@
+from sys import  argv
+import pymysql
+
+def disease(d_l):
+    """
+    疾病信息
+    """
+    di={}
+    l = list(d_l)
+    di['name']= l[0]
+    di['symptom'] = l[1].split(',')
+    return di
+
+def return_symptom(dl,kws):
+    '''
+    返回一个症状给用户选择
+    dl:疾病列表
+    kws：症状关键词列表
+    '''
+    di ={}
+    for i in dl:
+        for j in i["symptom"]:
+            if  j not in di:
+                di.update({j:1})
+            else:
+                di.update({j:di[j]+1})
+    return(sorted(di.items(), key = lambda kv:(kv[1], kv[0]),reverse=True)[len(kws)][0])
+
+
+def match_disease(disease_list,key_words):
+    '''
+    通过给定的症状关键词列表来匹配出具有症状的疾病
+    disease_list:要匹配的疾病列表
+    key_words:症状关键词列表
+    '''
+    dc_list=[]  #匹配的结果列表
+    for i in key_words:
+        dc_list=[]
+        for j in disease_list:
+            if i in j['symptom']:
+                dc_list.append(j)
+        disease_list = dc_list
+    return dc_list
+
+def get_disease():
+    '''
+    从数据库获取所有的疾病信息
+    '''
+    db = pymysql.connect("localhost", "root", "root", "disease", charset='utf8' ) # 数据库链接
+    cursor = db.cursor()
+    cursor.execute("select name,symptom from disease") # 从数据库获取疾病
+    data = cursor.fetchall()  # 获取所有疾病信息
+    # 将疾病封装成类，存储在列表中返回
+    disease_list=[]
+    for i in data:
+        print(i)
+        obj = disease(i)
+        disease_list.append(obj)
+    cursor.close()
+    db.close()
+    return disease_list
+
+if __name__ == '__main__':
+    kws=[]
+    kws.append(argv[1])
+    disease_list=get_disease()
+    disease_list=match_disease(disease_list,kws)
+    print(return_symptom(disease_list,kws))
+    print(kws)
+    print(disease_list)
+    print(len(disease_list))
